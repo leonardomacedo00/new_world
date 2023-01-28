@@ -5,4 +5,5 @@ Route.group(() => {
   Route.put("classrooms/:id", "ClassroomsController.update");
   Route.get("classrooms", "ClassroomsController.findAll");
   Route.delete("classrooms/:id", "ClassroomsController.delete");
+  Route.post("classrooms/add-student", "ClassroomsController.addOne")
 });

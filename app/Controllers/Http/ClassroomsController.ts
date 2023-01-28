@@ -1,5 +1,6 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Classroom from "App/Models/Classroom";
+import AddStudentValidator from "App/Validators/ClassRooms/AddStudentValidator";
 import CreateClassroomValidator from "App/Validators/ClassRooms/CreatsClassroomValidator";
 import UpdateClassRoomValidator from "App/Validators/ClassRooms/UpdateClassRoomValidator";
 
@@ -30,6 +31,7 @@ export default class ClassroomsController {
     const classroom = await Classroom.query()
       .where("id", id)
       .preload("teacher")
+      .preload("students")
       .firstOrFail();
 
     return ctx.response.ok(classroom);
@@ -50,5 +52,15 @@ export default class ClassroomsController {
 
     return ctx.response.noContent();
   }
+  public async addOne(ctx: HttpContextContract) {
+    const payload = await ctx.request.validate(AddStudentValidator);
 
+    const classroom = await Classroom.query()
+      .where("id", payload.classroomId)
+      .firstOrFail();
+
+    classroom.related("students").attach([payload.studentId]);
+
+    return ctx.response.ok(classroom);
+  }
 }

@@ -1,5 +1,6 @@
+import Classroom from 'App/Models/Classroom';
 import { DateTime } from "luxon";
-import { column } from "@ioc:Adonis/Lucid/Orm";
+import { column, ManyToMany, manyToMany } from "@ioc:Adonis/Lucid/Orm";
 import BaseUUID from "./BaseUUID";
 
 export default class Student extends BaseUUID {
@@ -14,6 +15,9 @@ export default class Student extends BaseUUID {
 
   @column.date()
   public birthDate: DateTime;
+
+  @manyToMany(() => Classroom,{ pivotTable:"classroom_students"})
+  public classroom: ManyToMany <typeof Classroom>
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
