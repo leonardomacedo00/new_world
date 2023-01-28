@@ -1,12 +1,19 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import Teacher from "App/Models/Teacher";
+import User from "App/Models/User";
 import CreateTeacherValidator from "App/Validators/Teacher/CreateTeacherValidator";
 
 export default class TeachersController {
   public async create(ctx: HttpContextContract) {
     const payload = await ctx.request.validate(CreateTeacherValidator);
 
-    const teacher = await Teacher.create(payload);
+    const teacher = await User.create({
+      name: payload.name,
+      email: payload.email,
+      password: payload.password,
+      registration: payload.registration,
+      birthDate: payload.birthDate,
+      isTeacher: true,
+    });
 
     return ctx.response.created(teacher);
   }
@@ -16,15 +23,24 @@ export default class TeachersController {
 
     const payload = await ctx.request.validate(CreateTeacherValidator);
 
-    const teacher = await Teacher.query().where("id", id).firstOrFail();
+    const teacher = await User.query().where("id", id).firstOrFail();
 
-    teacher.merge(payload).save();
+    teacher
+      .merge({
+        name: payload.name,
+        email: payload.email,
+        password: payload.password,
+        registration: payload.registration,
+        birthDate: payload.birthDate,
+        isTeacher: true,
+      })
+      .save();
 
     return ctx.response.ok(teacher);
   }
 
   public async findAll(ctx: HttpContextContract) {
-    const teacher = await Teacher.query();
+    const teacher = await User.query();
 
     return ctx.response.ok(teacher);
   }
@@ -32,7 +48,7 @@ export default class TeachersController {
   public async findOne(ctx: HttpContextContract) {
     const { id } = ctx.params;
 
-    const teacher = await Teacher.query().where("id", id).firstOrFail();
+    const teacher = await User.query().where("id", id).firstOrFail();
 
     return ctx.response.ok(teacher);
   }
@@ -40,7 +56,7 @@ export default class TeachersController {
   public async delete(ctx: HttpContextContract) {
     const { id } = ctx.params;
 
-    const teacher = await Teacher.findOrFail(id);
+    const teacher = await User.findOrFail(id);
 
     teacher.delete();
 

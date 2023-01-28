@@ -1,5 +1,5 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import Student from "App/Models/Student";
+import User from "App/Models/User";
 import CreateStudentValidator from "App/Validators/Students/CreateStudentValidator";
 import UpdateStudentValidator from "App/Validators/Students/UpdateStudantValidator";
 
@@ -7,7 +7,14 @@ export default class StudentsController {
   public async create(ctx: HttpContextContract) {
     const payload = await ctx.request.validate(CreateStudentValidator);
 
-    const student = await Student.create(payload);
+    const student = await User.create({
+      name: payload.name,
+      email: payload.email,
+      password: payload.password,
+      registration: payload.registration,
+      birthDate: payload.birthDate,
+      isStudent: true,
+    });
 
     return ctx.response.created(student);
   }
@@ -17,15 +24,24 @@ export default class StudentsController {
 
     const payload = await ctx.request.validate(UpdateStudentValidator);
 
-    const student = await Student.query().where("id", id).firstOrFail();
+    const student = await User.query().where("id", id).firstOrFail();
 
-    student.merge(payload).save();
+    student
+      .merge({
+        name: payload.name,
+        email: payload.email,
+        password: payload.password,
+        registration: payload.registration,
+        birthDate: payload.birthDate,
+        isStudent: true,
+      })
+      .save();
 
     return ctx.response.ok(student);
   }
 
   public async findAll(ctx: HttpContextContract) {
-    const students = await Student.query();
+    const students = await User.query();
 
     return ctx.response.ok(students);
   }
@@ -33,7 +49,7 @@ export default class StudentsController {
   public async findOne(ctx: HttpContextContract) {
     const { id } = ctx.params;
 
-    const student = await Student.query().where("id", id).firstOrFail();
+    const student = await User.query().where("id", id).firstOrFail();
 
     return ctx.response.ok(student);
   }
@@ -41,7 +57,7 @@ export default class StudentsController {
   public async delete(ctx: HttpContextContract) {
     const { id } = ctx.params;
 
-    const student = await Student.findOrFail(id);
+    const student = await User.findOrFail(id);
 
     student.delete();
 
