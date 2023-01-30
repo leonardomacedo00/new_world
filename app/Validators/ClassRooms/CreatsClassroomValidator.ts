@@ -7,9 +7,6 @@ export default class CreateClassroomValidator {
   public schema = schema.create({
     number: schema.number(),
     capacity: schema.number(),
-    teacherId: schema.string({}, [
-      rules.exists({ table: "teachers", column: "id" }),
-    ]),
   });
 
   public messages: CustomMessages = {};

@@ -5,14 +5,14 @@ export default class extends BaseSchema {
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.primary(["classroom_id", "student_id"]);
+      table.primary(["classroom_id", "user_id"]);
       table
         .uuid("classroom_id")
         .references("classrooms.id")
         .onDelete("CASCADE")
         .notNullable();
       table
-        .uuid("student_id")
+        .uuid("user_id")
         .references("users.id")
         .onDelete("CASCADE")
         .notNullable();

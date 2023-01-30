@@ -21,9 +21,14 @@ export default class TeachersController {
   public async update(ctx: HttpContextContract) {
     const { id } = ctx.params;
 
-    const payload = await ctx.request.validate(CreateTeacherValidator);
-
+    const user = ctx.auth.user!;
     const teacher = await User.query().where("id", id).firstOrFail();
+
+    if (user.id !== teacher.id) {
+      return ctx.response.badRequest("O usuário não tem permissão");
+    }
+
+    const payload = await ctx.request.validate(CreateTeacherValidator);
 
     teacher
       .merge({
@@ -39,16 +44,10 @@ export default class TeachersController {
     return ctx.response.ok(teacher);
   }
 
-  public async findAll(ctx: HttpContextContract) {
-    const teacher = await User.query();
+  public async findMyData(ctx: HttpContextContract) {
+    const user = ctx.auth.user!;
 
-    return ctx.response.ok(teacher);
-  }
-
-  public async findOne(ctx: HttpContextContract) {
-    const { id } = ctx.params;
-
-    const teacher = await User.query().where("id", id).firstOrFail();
+    const teacher = await User.query().where("id", user.id).firstOrFail();
 
     return ctx.response.ok(teacher);
   }
@@ -56,7 +55,12 @@ export default class TeachersController {
   public async delete(ctx: HttpContextContract) {
     const { id } = ctx.params;
 
-    const teacher = await User.findOrFail(id);
+    const user = ctx.auth.user!;
+    const teacher = await User.query().where("id", id).firstOrFail();
+
+    if (user.id !== teacher.id) {
+      return ctx.response.badRequest("O usuário não tem permissão");
+    }
 
     teacher.delete();
 

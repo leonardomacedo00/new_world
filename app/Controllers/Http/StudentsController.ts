@@ -22,14 +22,18 @@ export default class StudentsController {
   public async update(ctx: HttpContextContract) {
     const { id } = ctx.params;
 
-    const payload = await ctx.request.validate(UpdateStudentValidator);
-
+    const user = ctx.auth.user!;
     const student = await User.query().where("id", id).firstOrFail();
+
+    if (user.id !== student.id) {
+      return ctx.response.badRequest("O usuário não tem permissão");
+    }
+
+    const payload = await ctx.request.validate(UpdateStudentValidator);
 
     student
       .merge({
         name: payload.name,
-        email: payload.email,
         password: payload.password,
         registration: payload.registration,
         birthDate: payload.birthDate,
@@ -40,16 +44,17 @@ export default class StudentsController {
     return ctx.response.ok(student);
   }
 
-  public async findAll(ctx: HttpContextContract) {
-    const students = await User.query();
+  public async findMyData(ctx: HttpContextContract) {
+    const user = ctx.auth.user!;
 
-    return ctx.response.ok(students);
-  }
-
-  public async findOne(ctx: HttpContextContract) {
-    const { id } = ctx.params;
-
-    const student = await User.query().where("id", id).firstOrFail();
+    const student = await User.query()
+      .where("id", user.id)
+      .preload("classroom", (query) =>
+        query
+          .select("id", "number", "teacher_id")
+          .preload("teacher", (query) => query.select("id", "name"))
+      )
+      .firstOrFail();
 
     return ctx.response.ok(student);
   }
@@ -57,7 +62,12 @@ export default class StudentsController {
   public async delete(ctx: HttpContextContract) {
     const { id } = ctx.params;
 
-    const student = await User.findOrFail(id);
+    const user = ctx.auth.user!;
+    const student = await User.query().where("id", id).firstOrFail();
+
+    if (user.id !== student.id) {
+      return ctx.response.badRequest("O usuário não tem permissão");
+    }
 
     student.delete();
 
